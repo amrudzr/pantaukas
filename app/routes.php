@@ -7,6 +7,7 @@
 
 // Sertakan semua controller yang diperlukan
 require_once APP_PATH . 'controllers/AuthController.php';
+require_once APP_PATH . 'controllers/DashboardController.php'; // Controller untuk halaman dashboard
 require_once APP_PATH . 'controllers/ExampleController.php'; // Controller untuk halaman contoh (Example)
 // require_once APP_PATH . 'controllers/MemberController.php'; // BARU: Sertakan MemberController
 
@@ -66,17 +67,10 @@ $routes = [
         'http_method' => 'GET',
         'requires_auth' => true
     ],
-
+    
     // --- Rute untuk Halaman Dashboard ---
-    '^dashboard$' => [
-        'handler' => function () {
-            $pageTitle = "Dashboard";
-            $breadcrumbs = [
-                ['label' => 'Dashboard', 'url' => '/dashboard']
-            ];
-            $contentView = 'dashboard.php'; // Nama file view untuk konten spesifik
-            require_once APP_PATH . 'views/layout/app.php'; // Muat layout utama
-        },
+    '^dashboard$' => [ // Untuk /dashboard
+        'handler' => 'DashboardController@showDashboard',
         'http_method' => 'GET',
         'requires_auth' => true
     ],
@@ -215,12 +209,6 @@ function dispatchRequest($uri)
     ];
     $contentView = 'errors/404.php';
 
-    // Layout dipilih berdasarkan login atau tidak
-    if (isset($_SESSION['user_id'])) {
-        require_once APP_PATH . 'views/layout/app.php';     // user login → pakai layout dengan sidebar
-    } else {
-        require_once APP_PATH . 'views/layout/blank.php';   // tamu → pakai layout kosong
-    }
-
+    require_once APP_PATH . 'views/layout/app.php';
     exit;
 }

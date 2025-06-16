@@ -13,11 +13,22 @@ define('DB_NAME', 'pantaukas'); // Nama database yang telah Anda buat
 // Fungsi untuk membuat koneksi database
 function getDbConnection()
 {
-    $conn = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
+    try {
+        $conn = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
 
-    // Periksa koneksi
-    if ($conn->connect_error) {
-        die("Koneksi database gagal: " . $conn->connect_error);
+        if ($conn->connect_error) {
+            throw new Exception("Koneksi database gagal: " . $conn->connect_error);
+        }
+
+        return $conn;
+    } catch (Exception $e) {
+        // Variabel yang dikirim ke layout view
+        $errorMessage = $e->getMessage(); // pesan utama
+        $errorDetails = $e->getTraceAsString(); // detail tumpukan error
+        $pageTitle = "Koneksi Gagal";
+        $breadcrumbs = [];
+        $contentView = 'errors/500.php';
+        include APP_PATH . 'views/layout/app.php';
+        exit;
     }
-    return $conn;
 }

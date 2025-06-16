@@ -1,0 +1,5 @@
+# Uploads (user-generated content)
+public/uploads/*
+
+# Except placeholder file to keep folder in repo
+!public/uploads/.gitkeep

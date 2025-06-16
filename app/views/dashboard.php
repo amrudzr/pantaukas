@@ -1,8 +1,8 @@
 <?php
 
 /**
- * File: app/views/welcome.php
- * Deskripsi: Halaman selamat datang/beranda sederhana.
+ * File: app/views/dashboard.php
+ * Deskripsi: Halaman dashboard sederhana.
  * Konten ini akan dimuat di dalam layout app.php.
  */
 $selectedMonth = $_GET['bulan'] ?? date('m');

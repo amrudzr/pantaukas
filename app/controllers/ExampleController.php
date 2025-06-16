@@ -1,55 +1,52 @@
 <?php
+
 /**
  * File: app/controllers/ExampleController.php
- * Deskripsi: Contoh controller dummy untuk resource "examples"
- * Tujuannya adalah edukasi, agar developer pemula memahami alur routing, tampilan, dan manipulasi data dummy.
+ * Deskripsi: Contoh controller dummy untuk resource "examples".
+ * Tujuannya adalah edukasi — agar developer pemula memahami alur routing, tampilan, dan manipulasi data.
  */
+
+require_once APP_PATH . 'models/ExampleModel.php'; // pastikan model dimuat
 
 class ExampleController
 {
+    private $model;
+
+    public function __construct()
+    {
+        $this->model = new ExampleModel();
+    }
+
     /**
      * Menampilkan daftar data (halaman index)
+     * URL: /examples
      */
     public function index()
     {
         $search = $_GET['search'] ?? '';
+        $examples = $this->model->all($search);
 
-        // Dummy data (biasanya didapat dari database)
-        $data = [
-            ['id' => 1, 'nama' => 'Ahmad Surya', 'alamat' => 'Jl. Melati', 'status' => 'Aktif'],
-            ['id' => 2, 'nama' => 'Budi Santoso', 'alamat' => 'Jl. Mawar', 'status' => 'Pasif'],
-            ['id' => 3, 'nama' => 'Citra Ayu', 'alamat' => 'Jl. Anggrek', 'status' => 'Keluar'],
-        ];
-
-        // Simulasi filter pencarian (biasanya dilakukan di query SQL)
-        if ($search !== '') {
-            $data = array_filter($data, function ($item) use ($search) {
-                return stripos($item['nama'], $search) !== false || stripos($item['alamat'], $search) !== false;
-            });
-        }
-
-        // Kirim data ke view
-        $pageTitle = "Example";
+        $pageTitle = "Data Contoh";
         $breadcrumbs = [
             ['label' => 'Example', 'url' => '/examples']
         ];
         $contentView = 'example/index.php';
+
         include APP_PATH . 'views/layout/app.php';
     }
 
     /**
-     * Form tambah data (GET) / Simpan data baru (POST)
+     * Menampilkan form tambah data (GET) atau menyimpan data baru (POST)
+     * URL: /examples/create
      */
     public function create()
     {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $nama   = $_POST['nama'] ?? '';
+            $nama = $_POST['nama'] ?? '';
             $alamat = $_POST['alamat'] ?? '';
             $status = $_POST['status'] ?? '';
 
-            // Simulasi menyimpan ke database:
-            // $stmt = $db->prepare("INSERT INTO examples (nama, alamat, status) VALUES (?, ?, ?)");
-            // $stmt->execute([$nama, $alamat, $status]);
+            $this->model->create($nama, $alamat, $status);
 
             header('Location: /examples');
             exit;
@@ -61,38 +58,28 @@ class ExampleController
             ['label' => 'Tambah', 'url' => '']
         ];
         $contentView = 'example/create.php';
+
         include APP_PATH . 'views/layout/app.php';
     }
 
     /**
-     * Form edit data (GET) / Proses update (POST)
+     * Menampilkan form edit data (GET) atau menyimpan perubahan (POST)
+     * URL: /examples/edit/{id}
      */
     public function edit($id)
     {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $nama   = $_POST['nama'] ?? '';
+            $nama = $_POST['nama'] ?? '';
             $alamat = $_POST['alamat'] ?? '';
             $status = $_POST['status'] ?? '';
 
-            // Simulasi update ke database:
-            // $stmt = $db->prepare("UPDATE examples SET nama = ?, alamat = ?, status = ? WHERE id = ?");
-            // $stmt->execute([$nama, $alamat, $status, $id]);
+            $this->model->update($id, $nama, $alamat, $status);
 
             header('Location: /examples');
             exit;
         }
 
-        // Simulasi ambil data dari DB:
-        // $stmt = $db->prepare("SELECT * FROM examples WHERE id = ?");
-        // $stmt->execute([$id]);
-        // $data = $stmt->fetch();
-
-        $data = [
-            'id' => $id,
-            'nama' => 'Nama Dummy',
-            'alamat' => 'Alamat Dummy',
-            'status' => 'Aktif'
-        ];
+        $data = $this->model->find($id);
 
         $pageTitle = "Edit Data";
         $breadcrumbs = [
@@ -100,18 +87,17 @@ class ExampleController
             ['label' => 'Edit', 'url' => '']
         ];
         $contentView = 'example/edit.php';
+
         include APP_PATH . 'views/layout/app.php';
     }
 
     /**
      * Menghapus data
+     * URL: /examples/delete/{id}
      */
     public function delete($id)
     {
-        // Simulasi hapus dari database:
-        // $stmt = $db->prepare("DELETE FROM examples WHERE id = ?");
-        // $stmt->execute([$id]);
-
+        $this->model->delete($id);
         header('Location: /examples');
         exit;
     }
