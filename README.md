@@ -33,14 +33,7 @@ Pantaukas adalah aplikasi **pencatatan iuran & kas** berbasis web untuk skala 
 git clone https://github.com/amrudzr/pantaukas.git
 cd pantaukas
 ```
-#### 2. Konfigurasi file database
-```cmd
-cp config/database.example.php
-config/database.php
-```
-##### lalu sesuaikan host, user, password, dbname
-
-#### 3. Jalankan setup tabel dummy (dev only)
+#### 2. Jalankan setup tabel dummy (dev only)
 ```cmd
 php -S localhost:8000 -t public
 ```
@@ -55,7 +48,7 @@ php -S localhost:8000 -t public
 ```
 
 - Seluruh request akan masuk ke `public/index.php`, diteruskan ke `app/routes.php`, lalu controller / closure.
-- Login via `http://localhost:8000/login` (user & password dummy dibuat di step 3).
+- Login via `http://localhost:8000/login` (user & password dummy dibuat di step 2).
 
 ## Cara Kerja Singkat
 ##### 1. public/index.php
