@@ -30,6 +30,7 @@ define('DATABASE_PATH', __DIR__ . '/../database/');
 // Tujuan utamanya adalah agar fungsi yang sering digunakan (seperti format rupiah, redirect, validasi sederhana)
 // bisa didefinisikan di satu tempat dan digunakan ulang tanpa pengulangan kode.
 define('HELPER_PATH', __DIR__ . '/../app/helpers/');
+define('VENDOR', __DIR__ . '/../vendor/');
 
 
 // Sertakan file konfigurasi database.
@@ -45,6 +46,7 @@ require_once APP_PATH . 'routes.php';
 // File ini berisi kumpulan fungsi-fungsi global yang dapat digunakan di seluruh aplikasi.
 // Disertakan di sini agar fungsi helper tersedia sejak awal dan tidak perlu require ulang di setiap file.
 require_once HELPER_PATH . 'helpers.php';
+require_once VENDOR . 'autoload.php';
 
 // Mendapatkan URI yang diminta oleh pengguna dari URL.
 // parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) akan mengambil hanya path dari URL (misal: /books/3/detail).

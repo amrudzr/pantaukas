@@ -18,9 +18,17 @@
     ?>
     <!-- Bootstrap JS -->
     <script src="/bootstrap-5.3.2/js/bootstrap.bundle.min.js"></script>
-    
-    <!-- Tambahkan script jika diperlukan -->
 
+    <!-- Tambahkan script jika diperlukan -->
+    <script>
+        setTimeout(() => {
+            const flash = document.getElementById('flashToast');
+            if (flash) {
+                flash.classList.remove('show');
+                flash.classList.add('hide');
+            }
+        }, 4000);
+    </script>
 </body>
 
 </html>

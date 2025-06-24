@@ -8,8 +8,8 @@
 // Sertakan semua controller yang diperlukan
 require_once APP_PATH . 'controllers/AuthController.php';
 require_once APP_PATH . 'controllers/DashboardController.php'; // Controller untuk halaman dashboard
+require_once APP_PATH . 'controllers/MemberController.php';
 require_once APP_PATH . 'controllers/ExampleController.php'; // Controller untuk halaman contoh (Example)
-// require_once APP_PATH . 'controllers/MemberController.php'; // BARU: Sertakan MemberController
 
 /**
  * Peta rute yang mendefinisikan semua URL dan handler-nya.
@@ -89,6 +89,36 @@ $routes = [
         'requires_auth' => true
     ],
 
+    // --- BARU: Rute untuk Member (Members) ---
+    '^members$' => [ // Untuk /members (daftar semua member)
+        'handler' => 'MemberController@index',
+        'http_method' => 'GET'
+    ],
+    '^members/create$' => [ // Untuk /members/create (form create dan proses create)
+        'handler' => 'MemberController@create',
+        'http_method' => 'ANY'
+    ],
+    '^members/(\d+)/edit$' => [ // Untuk /members/ID/edit (form edit dan proses edit)
+        'handler' => 'MemberController@edit',
+        'http_method' => 'ANY'
+    ],
+    '^members/(\d+)/delete$' => [ // Untuk /members/ID/delete (proses delete)
+        'handler' => 'MemberController@delete',
+        'http_method' => 'POST'
+    ],
+    '^members/template$' => [ // Untuk /members/template
+        'handler' => 'MemberController@downloadTemplate',
+        'http_method' => 'GET'
+    ],
+    '^members/export$' => [ // Untuk /members/export
+        'handler' => 'MemberController@export',
+        'http_method' => 'GET'
+    ],
+    '^members/import$' => [ // Untuk /members/import
+        'handler' => 'MemberController@import',
+        'http_method' => 'POST'
+    ],
+
     // --- Rute untuk Halaman Example (Dummy CRUD) ---
     '^examples$' => [ // Tampilkan tabel data
         'handler' => 'ExampleController@index',
@@ -110,28 +140,6 @@ $routes = [
         'http_method' => 'POST',
         'requires_auth' => true
     ],
-
-    // // --- BARU: Rute untuk Member (Members) ---
-    // '^members$' => [ // Untuk /members (daftar semua member)
-    //     'handler' => 'MemberController@index',
-    //     'http_method' => 'GET'
-    // ],
-    // '^members/create$' => [ // Untuk /members/create (form create dan proses create)
-    //     'handler' => 'MemberController@create',
-    //     'http_method' => 'ANY'
-    // ],
-    // '^members/(\d+)/detail$' => [ // Untuk /members/ID/detail
-    //     'handler' => 'MemberController@detail',
-    //     'http_method' => 'GET'
-    // ],
-    // '^members/(\d+)/edit$' => [ // Untuk /members/ID/edit (form edit dan proses edit)
-    //     'handler' => 'MemberController@edit',
-    //     'http_method' => 'ANY'
-    // ],
-    // '^members/(\d+)/delete$' => [ // Untuk /members/ID/delete (proses delete)
-    //     'handler' => 'MemberController@delete',
-    //     'http_method' => 'POST'
-    // ],
 
     // // --- Rute Default (Halaman Utama / Index) ---
     // '^$' => [ // Jika URI kosong (misal: localhost:8000/)

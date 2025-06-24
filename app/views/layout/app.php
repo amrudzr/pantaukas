@@ -41,6 +41,30 @@ if (!isset($_SESSION['user_id'])) {
         <!-- KONTEN UTAMA -->
         <div class="col d-flex flex-column min-vh-100 px-0">
             <main class="flex-grow-1 p-4">
+                <?php if (isset($_SESSION['flash'])): ?>
+                    <?php
+                    [$type, $message] = $_SESSION['flash'];
+                    unset($_SESSION['flash']);
+
+                    // Tentukan icon berdasarkan tipe
+                    $icons = [
+                        'success' => 'bi-check-circle-fill',
+                        'danger'  => 'bi-exclamation-triangle-fill',
+                        'warning' => 'bi-exclamation-circle-fill',
+                        'info'    => 'bi-info-circle-fill'
+                    ];
+                    $icon = $icons[$type] ?? 'bi-info-circle-fill';
+                    ?>
+                    <div id="flashToast" class="toast align-items-center text-white bg-<?= $type ?> border-0 position-fixed bottom-0 end-0 m-4 z-3 show" role="alert">
+                        <div class="d-flex">
+                            <div class="toast-body">
+                                <i class="bi <?= $icon ?> me-2"></i><?= htmlspecialchars($message) ?>
+                            </div>
+                            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                        </div>
+                    </div>
+                <?php endif; ?>
+                
                 <?php
                 if (isset($_SESSION['user_id'])) {
                     require_once APP_PATH . 'views/layout/breadcrumb.php';
@@ -62,7 +86,7 @@ if (!isset($_SESSION['user_id'])) {
 
 <?php
 //FOOTER hanya jika TIDAK login
-if (!isset($_SESSION['user_id'])){
+if (!isset($_SESSION['user_id'])) {
     require_once APP_PATH . 'views/layout/footer.php';
 }
 ?>

@@ -24,7 +24,7 @@ $currentUri = $currentUri ?? '';
         </li>
         <li class="nav-item">
             <a href="/members"
-               class="nav-link d-flex align-items-center <?= (strpos($currentUri,'members')===0 && $currentUri!=='members/create') ? 'active' : 'text-dark'; ?>">
+               class="nav-link d-flex align-items-center <?= strpos($currentUri,'members')===0 ? 'active' : 'text-dark'; ?>">
                 <i class="bi bi-people-fill me-2"></i> Anggota
             </a>
         </li>
@@ -93,7 +93,7 @@ $currentUri = $currentUri ?? '';
             </li>
             <li class="nav-item">
                 <a href="/members"
-                   class="nav-link d-flex align-items-center <?= (strpos($currentUri,'members')===0 && $currentUri!=='members/create') ? 'active' : 'text-dark'; ?>">
+                   class="nav-link d-flex align-items-center <?= strpos($currentUri,'members')===0 ? 'active' : 'text-dark'; ?>">
                     <i class="bi bi-people-fill me-2"></i> Anggota
                 </a>
             </li>
