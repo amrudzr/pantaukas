@@ -5,7 +5,7 @@
                 <i class="bi bi-folder-fill me-2 text-primary"></i> Unduh & Bagikan Laporan
             </h5>
 
-            <form class="row gy-3 gx-3">
+            <form class="row gy-3 gx-3" action="/reports/export" method="GET">
                 <!-- Jenis Laporan -->
                 <div class="col-md-4">
                     <label for="jenis" class="form-label text-muted small">Jenis Laporan</label>
@@ -21,9 +21,12 @@
                     <label for="bulan" class="form-label text-muted small">Periode Bulan</label>
                     <select id="bulan" name="bulan" class="form-select shadow-sm" required>
                         <?php
-                        $bulanList = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+                        $bulanList = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+                        $currentMonth = date('n'); // Mengambil bulan saat ini (1-12)
                         foreach ($bulanList as $i => $nama): ?>
-                            <option value="<?= $i + 1 ?>"><?= $nama ?></option>
+                            <option value="<?= $i + 1 ?>" <?= ($i + 1 == $currentMonth) ? 'selected' : '' ?>>
+                                <?= $nama ?>
+                            </option>
                         <?php endforeach; ?>
                     </select>
                 </div>
@@ -32,8 +35,12 @@
                 <div class="col-md-4">
                     <label for="tahun" class="form-label text-muted small">Tahun</label>
                     <select id="tahun" name="tahun" class="form-select shadow-sm" required>
-                        <?php for ($y = date('Y'); $y >= 2020; $y--): ?>
-                            <option value="<?= $y ?>"><?= $y ?></option>
+                        <?php
+                        $currentYear = date('Y'); // Mengambil tahun saat ini
+                        for ($y = date('Y'); $y >= 2020; $y--): ?>
+                            <option value="<?= $y ?>" <?= ($y == $currentYear) ? 'selected' : '' ?>>
+                                <?= $y ?>
+                            </option>
                         <?php endfor; ?>
                     </select>
                 </div>
@@ -75,7 +82,7 @@
 </div>
 
 <script>
-    document.querySelector('[data-bs-target="#shareModal"]').addEventListener('click', function () {
+    document.querySelector('[data-bs-target="#shareModal"]').addEventListener('click', function() {
         const jenis = document.getElementById('jenis').value;
         const bulan = document.getElementById('bulan').value;
         const tahun = document.getElementById('tahun').value;
@@ -85,7 +92,7 @@
         document.getElementById('shareUrl').value = link;
     });
 
-    document.getElementById('copyBtn').addEventListener('click', function () {
+    document.getElementById('copyBtn').addEventListener('click', function() {
         const input = document.getElementById('shareUrl');
         input.select();
         input.setSelectionRange(0, 99999);

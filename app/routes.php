@@ -10,6 +10,7 @@ require_once APP_PATH . 'controllers/AuthController.php';
 require_once APP_PATH . 'controllers/DashboardController.php'; // Controller untuk halaman dashboard
 require_once APP_PATH . 'controllers/ProfileController.php';
 require_once APP_PATH . 'controllers/MemberController.php';
+require_once APP_PATH . 'controllers/ReportController.php';
 require_once APP_PATH . 'controllers/TypeFeeController.php';
 require_once APP_PATH . 'controllers/PaymentFeeController.php';
 require_once APP_PATH . 'controllers/TypeCashController.php';
@@ -98,15 +99,18 @@ $routes = [
     ],
 
     // --- Rute untuk Halaman Laporan ---
-    '^reports$' => [
-        'handler' => function () {
-            $pageTitle = "Laporan";
-            $breadcrumbs = [
-                ['label' => 'Laporan', 'url' => '/reports']
-            ];
-            $contentView = 'report/index.php'; // Nama file view untuk konten spesifik
-            require_once APP_PATH . 'views/layout/app.php'; // Muat layout utama
-        },
+    '^reports$' => [ // Untuk /reports
+        'handler' => 'ReportController@index',
+        'http_method' => 'GET',
+        'requires_auth' => true
+    ],
+    '^reports/view$' => [ // Untuk ???
+        'handler' => 'ReportController@view',
+        'http_method' => 'GET',
+        'requires_auth' => true
+    ],
+    '^reports/export$' => [ // Untuk download file dari data kas
+        'handler' => 'ReportController@export',
         'http_method' => 'GET',
         'requires_auth' => true
     ],

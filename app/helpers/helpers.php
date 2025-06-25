@@ -133,3 +133,26 @@ function time_ago($datetime, $full = false) {
     
     return !empty($parts) ? implode(', ', $parts) . ' yang lalu' : 'baru saja';
 }
+
+if (!function_exists('format_date')) {
+    /**
+     * Format tanggal dari database ke format yang lebih mudah dibaca
+     * 
+     * @param string $dateString Tanggal dari database (format Y-m-d)
+     * @param string $format Format output (default: 'd F Y')
+     * @return string Tanggal yang sudah diformat
+     */
+    function format_date($dateString, $format = 'd F Y')
+    {
+        if (empty($dateString)) {
+            return '-';
+        }
+
+        try {
+            $date = new DateTime($dateString);
+            return $date->format($format);
+        } catch (Exception $e) {
+            return $dateString; // Return as-is jika parsing gagal
+        }
+    }
+}
