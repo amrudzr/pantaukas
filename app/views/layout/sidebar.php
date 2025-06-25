@@ -65,7 +65,7 @@ $currentUri = $currentUri ?? '';
             <strong>Account</strong>
         </a>
         <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="dropdownUser">
-            <li><a class="dropdown-item" href="/profile"><i class="bi bi-person me-2"></i> Profile</a></li>
+            <li><a class="dropdown-item" href="/account/profile"><i class="bi bi-person me-2"></i> Profile</a></li>
             <li><hr class="dropdown-divider"></li>
             <li><a class="dropdown-item" href="/logout"><i class="bi bi-box-arrow-right me-2"></i> Logout</a></li>
         </ul>
@@ -134,7 +134,7 @@ $currentUri = $currentUri ?? '';
                 <strong>Account</strong>
             </a>
             <ul class="dropdown-menu shadow" aria-labelledby="dropdownUserMobile">
-                <li><a class="dropdown-item" href="/profile"><i class="bi bi-person me-2"></i> Profile</a></li>
+                <li><a class="dropdown-item" href="/account/profile"><i class="bi bi-person me-2"></i> Profile</a></li>
                 <li><hr class="dropdown-divider"></li>
                 <li><a class="dropdown-item" href="/logout"><i class="bi bi-box-arrow-right me-2"></i> Logout</a></li>
             </ul>

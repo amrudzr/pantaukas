@@ -8,6 +8,7 @@
 // Sertakan semua controller yang diperlukan
 require_once APP_PATH . 'controllers/AuthController.php';
 require_once APP_PATH . 'controllers/DashboardController.php'; // Controller untuk halaman dashboard
+require_once APP_PATH . 'controllers/ProfileController.php';
 require_once APP_PATH . 'controllers/MemberController.php';
 require_once APP_PATH . 'controllers/TypeFeeController.php';
 require_once APP_PATH . 'controllers/PaymentFeeController.php';
@@ -71,11 +72,28 @@ $routes = [
         'http_method' => 'GET',
         'requires_auth' => true
     ],
-    
+
     // --- Rute untuk Halaman Dashboard ---
     '^dashboard$' => [ // Untuk /dashboard
         'handler' => 'DashboardController@index',
         'http_method' => 'GET',
+        'requires_auth' => true
+    ],
+
+    // --- Rute untuk Halaman Profil ---
+    '^account/profile$' => [
+        'handler' => 'ProfileController@index',
+        'http_method' => 'GET',
+        'requires_auth' => true
+    ],
+    '^account/profile/update$' => [
+        'handler' => 'ProfileController@update',
+        'http_method' => 'POST',
+        'requires_auth' => true
+    ],
+    '^account/profile/delete$' => [
+        'handler' => 'ProfileController@delete',
+        'http_method' => 'POST',
         'requires_auth' => true
     ],
 
@@ -122,7 +140,7 @@ $routes = [
         'handler' => 'MemberController@import',
         'http_method' => 'POST'
     ],
-    
+
     // --- BARU: Rute untuk Type Fee ---
     '^fee/types$' => [ // Untuk /fee/types (daftar semua jenis iuran)
         'handler' => 'TypeFeeController@index',
@@ -140,13 +158,13 @@ $routes = [
         'handler' => 'TypeFeeController@delete',
         'http_method' => 'POST'
     ],
-    
+
     // --- BARU: Rute untuk Type Fee ---
     '^fee/types/(\d+)/details$' => [ // Untuk /fee/types/ID/details (daftar iuran anggota)
         'handler' => 'PaymentFeeController@details',
         'http_method' => 'ANY'
     ],
-    
+
     // --- BARU: Rute untuk Cash ---
     '^cash$' => [ // Untuk /cash (daftar semua kas)
         'handler' => 'PaymentCashController@index',
@@ -164,7 +182,7 @@ $routes = [
         'handler' => 'PaymentCashController@delete',
         'http_method' => 'POST'
     ],
-    
+
     // --- BARU: Rute untuk Transaction Categories ---
     '^cash/categories$' => [ // Untuk /cash (daftar semua kategori transaksi)
         'handler' => 'TypeCashController@index',

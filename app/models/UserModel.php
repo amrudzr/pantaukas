@@ -90,4 +90,36 @@ class UserModel
             return false;
         }
     }
+
+    /** Temukan user berdasarkan ID */
+    public function find($id)
+    {
+        $stmt = $this->db->prepare("SELECT * FROM user WHERE id = ?");
+        $stmt->bind_param("i", $id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        return $result->fetch_assoc();
+    }
+
+    /** Update data user */
+    public function update($id, $data)
+    {
+        $stmt = $this->db->prepare("UPDATE user SET name = ?, phone = ?, password = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?");
+        $stmt->bind_param("sssi", $data['name'], $data['phone'], $data['password'], $id);
+
+        if (!$stmt->execute()) {
+            error_log("Error updating user: " . $stmt->error);
+            throw new Exception('Gagal memperbarui data user');
+        }
+
+        return true;
+    }
+
+    /** Soft delete user */
+    public function delete($id)
+    {
+        $stmt = $this->db->prepare("UPDATE user SET status = 'deleted', deleted_at = CURRENT_TIMESTAMP WHERE id = ?");
+        $stmt->bind_param("i", $id);
+        return $stmt->execute();
+    }
 }
