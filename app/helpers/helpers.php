@@ -26,7 +26,6 @@ if (!function_exists('redirect')) {
     }
 }
 
-
 if (!function_exists('format_rupiah')) {
     function format_rupiah($angka)
     {
@@ -74,4 +73,63 @@ if (!function_exists('upload_file')) {
 
         return null;
     }
+}
+
+function translateDuration($duration) {
+    return match($duration) {
+        'daily'    => 'Harian',
+        'weekly'   => 'Mingguan',
+        'monthly'  => 'Bulanan',
+        'annually' => 'Tahunan',
+        default    => $duration
+    };
+}
+
+function pctBadge(float $pct): string
+{
+    $pctText = ($pct >= 0 ? '+' : '') . number_format($pct * 100, 2) . '%';
+    $icon    = $pct >= 0 ? 'bi-arrow-up-right' : 'bi-arrow-down-right';
+    $color   = $pct >= 0 ? 'text-success' : 'text-danger';
+    return "<span class='d-inline-flex align-items-center small $color'><i class='bi $icon me-1'></i>$pctText</span>";
+}
+
+/**
+ * Helper untuk mengubah tanggal/waktu menjadi format "x waktu yang lalu"
+ * 
+ * @param string|DateTime $datetime Tanggal/waktu (string format Y-m-d H:i:s atau DateTime object)
+ * @param bool $full Tampilkan detail penuh (default: false)
+ * @return string Format "x waktu yang lalu"
+ */
+function time_ago($datetime, $full = false) {
+    $now = new DateTime;
+    $ago = is_string($datetime) ? new DateTime($datetime) : $datetime;
+    $diff = $now->diff($ago);
+    
+    // Hitung minggu secara manual dari hari
+    $weeks = floor($diff->d / 7);
+    $days = $diff->d % 7;
+    
+    // Susun satuan waktu
+    $units = [
+        'tahun'   => $diff->y,
+        'bulan'   => $diff->m,
+        'minggu'  => $weeks,
+        'hari'    => $days,
+        'jam'     => $diff->h,
+        'menit'   => $diff->i,
+        'detik'   => $diff->s
+    ];
+    
+    $parts = [];
+    foreach ($units as $unit => $value) {
+        if ($value > 0) {
+            $parts[] = $value . ' ' . $unit;
+        }
+        
+        if (!$full && !empty($parts)) {
+            break;
+        }
+    }
+    
+    return !empty($parts) ? implode(', ', $parts) . ' yang lalu' : 'baru saja';
 }

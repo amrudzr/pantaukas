@@ -36,9 +36,18 @@ $anggotaTunggakan = $anggotaTunggakan ?? [
         <select name="bulan" class="form-select form-select-sm">
             <?php
             $bulanList = [
-                '01'=>'Januari', '02'=>'Februari', '03'=>'Maret', '04'=>'April',
-                '05'=>'Mei', '06'=>'Juni', '07'=>'Juli', '08'=>'Agustus',
-                '09'=>'September', '10'=>'Oktober', '11'=>'November', '12'=>'Desember'
+                '01' => 'Januari',
+                '02' => 'Februari',
+                '03' => 'Maret',
+                '04' => 'April',
+                '05' => 'Mei',
+                '06' => 'Juni',
+                '07' => 'Juli',
+                '08' => 'Agustus',
+                '09' => 'September',
+                '10' => 'Oktober',
+                '11' => 'November',
+                '12' => 'Desember'
             ];
             foreach ($bulanList as $val => $label) {
                 $selected = $selectedMonth == $val ? 'selected' : '';
@@ -134,8 +143,8 @@ $anggotaTunggakan = $anggotaTunggakan ?? [
         <div class="card shadow-sm h-100">
             <div class="card-header bg-white fw-semibold d-flex justify-content-between align-items-center">
                 Riwayat Transaksi Terakhir
-                <a href="/transactions" class="btn btn-sm btn-link text-decoration-none">
-                    Lihat selengkapnya <i class="bi bi-arrow-right-short"></i>
+                <a href="/cash" class="btn btn-sm btn-link text-decoration-none">
+                    Selengkapnya <i class="bi bi-arrow-right-short"></i>
                 </a>
             </div>
             <div class="card-body p-0">
@@ -144,10 +153,10 @@ $anggotaTunggakan = $anggotaTunggakan ?? [
                         <thead class="table-light">
                             <tr>
                                 <th>#</th>
-                                <th>Tanggal</th>
-                                <th>Keterangan</th>
                                 <th>Kategori</th>
-                                <th class="text-end">Jumlah (Rp)</th>
+                                <th>Keterangan</th>
+                                <th class="text-end">Nominal</th>
+                                <th></th>
                             </tr>
                         </thead>
                         <tbody>
@@ -155,10 +164,12 @@ $anggotaTunggakan = $anggotaTunggakan ?? [
                                 <?php foreach ($riwayatTransaksi as $i => $trx): ?>
                                     <tr>
                                         <td><?= $i + 1 ?></td>
-                                        <td><?= htmlspecialchars($trx['tanggal']) ?></td>
-                                        <td><?= htmlspecialchars($trx['keterangan']) ?></td>
-                                        <td><?= htmlspecialchars($trx['kategori']) ?></td>
-                                        <td class="text-end"><?= number_format($trx['jumlah'], 0, ',', '.') ?></td>
+                                        <td><?= htmlspecialchars($trx['category_name']) ?></td>
+                                        <td><?= htmlspecialchars($trx['title']) ?></td>
+                                        <td class="text-end <?= $trx['type'] === 'out' ? 'text-danger' : 'text-success' ?>">
+                                            <?= ($trx['type'] === 'out' ? '-' : '') . format_rupiah($trx['nominal'], 0, ',', '.') ?>
+                                        </td>
+                                        <td class="text-end fs-6 fst-italic fw-light"><?= time_ago($trx['payment_date']) ?></td>
                                     </tr>
                                 <?php endforeach; ?>
                             <?php else: ?>
@@ -179,7 +190,7 @@ $anggotaTunggakan = $anggotaTunggakan ?? [
             <div class="card-header bg-white fw-semibold d-flex justify-content-between align-items-center">
                 Status Iuran Anggota
                 <a href="/iuran/tunggakan" class="btn btn-sm btn-link text-decoration-none">
-                    Lihat selengkapnya <i class="bi bi-arrow-right-short"></i>
+                    Selengkapnya <i class="bi bi-arrow-right-short"></i>
                 </a>
             </div>
             <div class="card-body p-0">
@@ -252,14 +263,3 @@ $anggotaTunggakan = $anggotaTunggakan ?? [
         }
     });
 </script>
-
-<?php
-// Helper untuk badge persen
-function pctBadge(float $pct): string
-{
-    $pctText = ($pct >= 0 ? '+' : '') . number_format($pct * 100, 2) . '%';
-    $icon    = $pct >= 0 ? 'bi-arrow-up-right' : 'bi-arrow-down-right';
-    $color   = $pct >= 0 ? 'text-success' : 'text-danger';
-    return "<span class='d-inline-flex align-items-center small $color'><i class='bi $icon me-1'></i>$pctText</span>";
-}
-?>

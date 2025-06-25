@@ -29,8 +29,8 @@ $currentUri = $currentUri ?? '';
             </a>
         </li>
         <li class="nav-item">
-            <a href="/dues"
-               class="nav-link d-flex align-items-center <?= strpos($currentUri,'dues')===0 ? 'active' : 'text-dark'; ?>">
+            <a href="/fee/types"
+               class="nav-link d-flex align-items-center <?= strpos($currentUri,'fee/types')===0 ? 'active' : 'text-dark'; ?>">
                 <i class="bi bi-coin me-2"></i> Iuran
             </a>
         </li>
@@ -46,12 +46,12 @@ $currentUri = $currentUri ?? '';
                 <i class="bi bi-wallet me-2"></i> Kas
             </a>
         </li>
-        <li class="nav-item">
+        <!-- <li class="nav-item">
             <a href="/examples"
                class="nav-link d-flex align-items-center <?= strpos($currentUri,'examples')===0 ? 'active' : 'text-dark'; ?>">
                 <i class="bi bi-code-slash me-2"></i> Example
             </a>
-        </li>
+        </li> -->
     </ul>
 
     <!-- Dropdown Akun -->
@@ -98,8 +98,8 @@ $currentUri = $currentUri ?? '';
                 </a>
             </li>
             <li class="nav-item">
-                <a href="/dues"
-                   class="nav-link d-flex align-items-center <?= strpos($currentUri,'dues')===0 ? 'active' : 'text-dark'; ?>">
+                <a href="/fee/types"
+                   class="nav-link d-flex align-items-center <?= strpos($currentUri,'fee/types')===0 ? 'active' : 'text-dark'; ?>">
                     <i class="bi bi-coin me-2"></i> Iuran
                 </a>
             </li>
@@ -115,12 +115,12 @@ $currentUri = $currentUri ?? '';
                     <i class="bi bi-wallet me-2"></i> Kas
                 </a>
             </li>
-            <li class="nav-item">
+            <!-- <li class="nav-item">
                 <a href="/examples"
                    class="nav-link d-flex align-items-center <?= strpos($currentUri,'examples')===0 ? 'active' : 'text-dark'; ?>">
                     <i class="bi bi-code-slash me-2"></i> Example
                 </a>
-            </li>
+            </li> -->
         </ul>
 
         <!-- DROPDOWN AKUN -->
