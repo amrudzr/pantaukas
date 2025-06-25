@@ -9,6 +9,11 @@ class PaymentCashModel
         $this->db = getDbConnection();
     }
 
+    public function getDb()
+    {
+        return $this->db;
+    }
+    
     public function all($keyword = '')
     {
         $userId = $_SESSION['user_id'];
