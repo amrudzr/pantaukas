@@ -14,7 +14,7 @@ function migrate_create_type_cash_table(mysqli $conn)
 {
     $sql = "CREATE TABLE IF NOT EXISTS type_cash (
                 id INT AUTO_INCREMENT PRIMARY KEY,
-                id_user INT NOT NULL,
+                id_user INT NULL,
                 name VARCHAR(255) NOT NULL,
                 description VARCHAR(255) NULL,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

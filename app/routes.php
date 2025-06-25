@@ -9,6 +9,8 @@
 require_once APP_PATH . 'controllers/AuthController.php';
 require_once APP_PATH . 'controllers/DashboardController.php'; // Controller untuk halaman dashboard
 require_once APP_PATH . 'controllers/MemberController.php';
+require_once APP_PATH . 'controllers/TypeCashController.php';
+require_once APP_PATH . 'controllers/PaymentCashController.php';
 require_once APP_PATH . 'controllers/ExampleController.php'; // Controller untuk halaman contoh (Example)
 
 /**
@@ -116,6 +118,42 @@ $routes = [
     ],
     '^members/import$' => [ // Untuk /members/import
         'handler' => 'MemberController@import',
+        'http_method' => 'POST'
+    ],
+    
+    // --- BARU: Rute untuk Cash ---
+    '^cash$' => [ // Untuk /cash (daftar semua member)
+        'handler' => 'PaymentCashController@index',
+        'http_method' => 'GET'
+    ],
+    '^cash/create$' => [ // Untuk /cash/create (form create dan proses create)
+        'handler' => 'PaymentCashController@create',
+        'http_method' => 'ANY'
+    ],
+    '^cash/(\d+)/edit$' => [ // Untuk /cash/ID/edit (form edit dan proses edit)
+        'handler' => 'PaymentCashController@edit',
+        'http_method' => 'ANY'
+    ],
+    '^cash/(\d+)/delete$' => [ // Untuk /cash/ID/delete (proses delete)
+        'handler' => 'PaymentCashController@delete',
+        'http_method' => 'POST'
+    ],
+    
+    // --- BARU: Rute untuk Cash Categories ---
+    '^cash/categories$' => [ // Untuk /cash (daftar semua member)
+        'handler' => 'TypeCashController@index',
+        'http_method' => 'GET'
+    ],
+    '^cash/categories/create$' => [ // Untuk /cash/categories/create (form create dan proses create)
+        'handler' => 'TypeCashController@create',
+        'http_method' => 'ANY'
+    ],
+    '^cash/categories/(\d+)/edit$' => [ // Untuk /cash/categories/ID/edit (form edit dan proses edit)
+        'handler' => 'TypeCashController@edit',
+        'http_method' => 'ANY'
+    ],
+    '^cash/categories/(\d+)/delete$' => [ // Untuk /cash/categories/ID/delete (proses delete)
+        'handler' => 'TypeCashController@delete',
         'http_method' => 'POST'
     ],
 

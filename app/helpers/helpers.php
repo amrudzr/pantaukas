@@ -40,3 +40,38 @@ if (!function_exists('is_post')) {
         return $_SERVER['REQUEST_METHOD'] === 'POST';
     }
 }
+
+if (!function_exists('upload_file')) {
+    /**
+     * Upload file ke folder public/uploads dan kembalikan path relatifnya.
+     * @param array $file $_FILES['field']
+     * @param string $subfolder opsional: subfolder di dalam /uploads, misal "kas/"
+     * @param array $allowed ekstensi yang diizinkan (tanpa titik)
+     * @return string|null path relatif (untuk disimpan di database) atau null jika gagal
+     */
+    function upload_file($file, $subfolder = '', $allowed = ['jpg', 'jpeg', 'png', 'pdf'])
+    {
+        if (!isset($file['tmp_name']) || $file['error'] !== UPLOAD_ERR_OK) {
+            return null;
+        }
+
+        $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+        if (!in_array($ext, $allowed)) {
+            return null;
+        }
+
+        $uploadDir = __DIR__ . '/../../public/uploads/' . $subfolder;
+        if (!is_dir($uploadDir)) {
+            mkdir($uploadDir, 0755, true);
+        }
+
+        $newName = uniqid() . '.' . $ext;
+        $target = $uploadDir . '/' . $newName;
+
+        if (move_uploaded_file($file['tmp_name'], $target)) {
+            return '/uploads/' . ltrim($subfolder . '/', '/') . $newName;
+        }
+
+        return null;
+    }
+}
