@@ -8,21 +8,21 @@
                 <i class="bi bi-wallet2 me-1"></i> Form Transaksi Kas
             </h5>
 
-            <!-- Tab Switch Full Width -->
-            <div class="mb-3">
-                <input type="hidden" name="type" id="typeInput" value="in">
-                <div class="row g-2">
-                    <div class="col-6">
-                        <button type="button" class="btn btn-success w-100 active" id="tabIn">Pemasukan</button>
-                    </div>
-                    <div class="col-6">
-                        <button type="button" class="btn btn-outline-danger w-100" id="tabOut">Pengeluaran</button>
-                    </div>
-                </div>
-            </div>
-
             <!-- Form -->
             <form method="POST" action="/cash/create" enctype="multipart/form-data">
+                <!-- Tab Switch Full Width -->
+                <div class="mb-3">
+                    <input type="hidden" name="type" id="typeInput" value="in">
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <button type="button" class="btn btn-success w-100 active" id="tabIn">Pemasukan</button>
+                        </div>
+                        <div class="col-6">
+                            <button type="button" class="btn btn-outline-danger w-100" id="tabOut">Pengeluaran</button>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="row g-3">
                     <!-- Tanggal -->
                     <div class="col-md-6">
@@ -61,34 +61,34 @@
                     <!-- Lampiran -->
                     <div class="col-md-12">
                         <label class="form-label">Lampiran <span class="text-muted">(opsional)</span></label>
-                            <!-- Dropdown Trigger -->
-                            <div class="dropdown">
-                                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="lampiranDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                                    Pilih Jenis Lampiran
-                                </button>
-                                <ul class="dropdown-menu" aria-labelledby="lampiranDropdown">
-                                    <li><a class="dropdown-item" href="#" onclick="showAttachment('url'); return false;">Lampiran URL</a></li>
-                                    <li><a class="dropdown-item" href="#" onclick="showAttachment('file'); return false;">Upload File</a></li>
-                                    <li id="cameraOption"><a class="dropdown-item" href="#" onclick="showAttachment('camera'); return false;">Ambil Foto Kamera</a></li>
-                                </ul>
-                            </div>
+                        <!-- Dropdown Trigger -->
+                        <div class="dropdown">
+                            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="lampiranDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                Pilih Jenis Lampiran
+                            </button>
+                            <ul class="dropdown-menu" aria-labelledby="lampiranDropdown">
+                                <li><a class="dropdown-item" href="#" onclick="showAttachment('url'); return false;">Lampiran URL</a></li>
+                                <li><a class="dropdown-item" href="#" onclick="showAttachment('file'); return false;">Upload File</a></li>
+                                <li id="cameraOption"><a class="dropdown-item" href="#" onclick="showAttachment('camera'); return false;">Ambil Foto Kamera</a></li>
+                            </ul>
+                        </div>
 
-                            <!-- Input URL (default hidden) -->
-                            <div id="attachmentUrlInput" style="display:none; min-width:250px;">
-                                <input type="url" class="form-control form-control-sm mt-2" name="attachment_url" placeholder="https://..." />
-                            </div>
+                        <!-- Input URL (default hidden) -->
+                        <div id="attachmentUrlInput" style="display:none; min-width:250px;">
+                            <input type="url" class="form-control form-control-sm mt-2" name="attachment_url" placeholder="https://..." />
+                        </div>
 
-                            <!-- Upload File -->
-                            <div id="attachmentFileInput" style="display:none;">
-                                <div class="mt-2" id="filePreview" style="display: none;"></div>
-                                <input type="file" class="form-control form-control-sm mt-2" name="attachment_file" accept="image/*,application/pdf" onchange="checkSize(this); previewAttachment(this);" />
-                            </div>
+                        <!-- Upload File -->
+                        <div id="attachmentFileInput" style="display:none;">
+                            <div class="mt-2" id="filePreview" style="display: none;"></div>
+                            <input type="file" class="form-control form-control-sm mt-2" name="attachment_file" accept="image/*,application/pdf" onchange="checkSize(this); previewAttachment(this);" />
+                        </div>
 
-                            <!-- Kamera Langsung -->
-                            <div id="attachmentCameraInput" style="display:none;">
-                                <input type="file" class="form-control form-control-sm" name="attachment_camera" accept="image/*" capture="environment" />
-                                <small class="text-muted d-block mt-1">Gunakan kamera belakang untuk ambil foto langsung</small>
-                            </div>
+                        <!-- Kamera Langsung -->
+                        <div id="attachmentCameraInput" style="display:none;">
+                            <input type="file" class="form-control form-control-sm" name="attachment_camera" accept="image/*" capture="environment" />
+                            <small class="text-muted d-block mt-1">Gunakan kamera belakang untuk ambil foto langsung</small>
+                        </div>
                     </div>
 
                     <!-- Catatan -->
@@ -114,6 +114,17 @@
 </div>
 
 <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelector('form').addEventListener('submit', function(e) {
+            const activeTab = document.querySelector('.btn.active');
+            if (activeTab.id === 'tabOut') {
+                document.getElementById('typeInput').value = 'out';
+            } else {
+                document.getElementById('typeInput').value = 'in';
+            }
+        });
+    });
+
     const tabIn = document.getElementById('tabIn');
     const tabOut = document.getElementById('tabOut');
     const typeInput = document.getElementById('typeInput');

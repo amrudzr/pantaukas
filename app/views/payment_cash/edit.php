@@ -7,19 +7,19 @@
                 <i class="bi bi-wallet2 me-1"></i> Edit Transaksi Kas
             </h5>
 
-            <div class="mb-3">
-                <input type="hidden" name="type" id="typeInput" value="<?= $cash['type'] ?>">
-                <div class="row g-2">
-                    <div class="col-6">
-                        <button type="button" class="btn w-100 <?= $cash['type'] === 'in' ? 'btn-success active' : 'btn-outline-success' ?>" id="tabIn">Pemasukan</button>
-                    </div>
-                    <div class="col-6">
-                        <button type="button" class="btn w-100 <?= $cash['type'] === 'out' ? 'btn-danger active' : 'btn-outline-danger' ?>" id="tabOut">Pengeluaran</button>
+            <form method="POST" action="/cash/<?= $cash['id'] ?>/edit" enctype="multipart/form-data">
+                <div class="mb-3">
+                    <input type="hidden" name="type" id="typeInput" value="<?= $cash['type'] ?>">
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <button type="button" class="btn w-100 <?= $cash['type'] === 'in' ? 'btn-success active' : 'btn-outline-success' ?>" id="tabIn">Pemasukan</button>
+                        </div>
+                        <div class="col-6">
+                            <button type="button" class="btn w-100 <?= $cash['type'] === 'out' ? 'btn-danger active' : 'btn-outline-danger' ?>" id="tabOut">Pengeluaran</button>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <form method="POST" action="/cash/<?= $cash['id'] ?>/edit" enctype="multipart/form-data">
                 <div class="row g-3">
                     <div class="col-md-6">
                         <label class="form-label">Tanggal</label>
@@ -137,6 +137,18 @@
 </div>
 
 <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Inisialisasi nilai default
+        document.querySelector('form').addEventListener('submit', function(e) {
+            // Pastikan nilai type terupdate sebelum submit
+            const activeTab = document.querySelector('.btn.active');
+            if (activeTab.id === 'tabOut') {
+                document.getElementById('typeInput').value = 'out';
+            } else {
+                document.getElementById('typeInput').value = 'in';
+            }
+        });
+    });
     const tabIn = document.getElementById('tabIn');
     const tabOut = document.getElementById('tabOut');
     const typeInput = document.getElementById('typeInput');
@@ -196,7 +208,7 @@
             input.value = ""; // Clear input
         }
     }
-    
+
     // Preview Zoom Modal
     document.addEventListener('DOMContentLoaded', () => {
         const previewImage = document.getElementById('previewImage');
