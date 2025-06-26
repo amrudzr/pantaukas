@@ -47,7 +47,7 @@ class TypeFeeModel
         return $result['nominal'] ?? 0;
     }
 
-    public function create($data)
+    public function create($id_user, $name, $nominal, $duration, $description)
     {
         $stmt = $this->db->prepare("
             INSERT INTO type_fee 
@@ -57,17 +57,17 @@ class TypeFeeModel
 
         $stmt->bind_param(
             "isiss",
-            $data['id_user'],
-            $data['name'],
-            $data['nominal'],
-            $data['duration'],
-            $data['description']
+            $id_user,
+            $name,
+            $nominal,
+            $duration,
+            $description
         );
 
         return $stmt->execute() ? $this->db->insert_id : false;
     }
 
-    public function update($id, $data)
+    public function update($id, $name, $nominal, $duration, $description)
     {
         $stmt = $this->db->prepare("
             UPDATE type_fee SET
@@ -81,10 +81,10 @@ class TypeFeeModel
 
         $stmt->bind_param(
             "sissii",
-            $data['name'],
-            $data['nominal'],
-            $data['duration'],
-            $data['description'],
+            $name,
+            $nominal,
+            $duration,
+            $description,
             $id,
             $_SESSION['user_id']
         );
