@@ -9,6 +9,24 @@ class TypeFeeModel
         $this->db = getDbConnection();
     }
 
+    public function getAllActive()
+    {
+        $userId = $_SESSION['user_id']; // Ambil user ID dari session
+
+        $stmt = $this->db->prepare("
+            SELECT id, name, nominal, description 
+            FROM type_fee 
+            WHERE id_user = ? 
+            AND deleted_at IS NULL
+            ORDER BY name ASC
+        ");
+        $stmt->bind_param("i", $userId);
+        $stmt->execute();
+        
+        $result = $stmt->get_result();
+        return $result->fetch_all(MYSQLI_ASSOC);
+    }
+    
     public function all()
     {
         $userId = $_SESSION['user_id'];

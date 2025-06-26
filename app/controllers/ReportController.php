@@ -1,6 +1,8 @@
 <?php
 require_once APP_PATH . 'models/PaymentCashModel.php';
 require_once APP_PATH . 'models/TypeCashModel.php';
+require_once APP_PATH . 'models/PaymentFeeModel.php';
+require_once APP_PATH . 'models/TypeFeeModel.php';
 
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
@@ -11,10 +13,14 @@ use PhpOffice\PhpSpreadsheet\Style\Fill;
 class ReportController
 {
     private $paymentCashModel;
+    private $paymentFeeModel;
+    private $typeFeeModel;
 
     public function __construct()
     {
         $this->paymentCashModel = new PaymentCashModel();
+        $this->paymentFeeModel = new PaymentFeeModel();
+        $this->typeFeeModel = new TypeFeeModel();
     }
 
     /** GET /reports */
@@ -35,44 +41,58 @@ class ReportController
         $bulan = $_GET['bulan'] ?? date('m');
         $tahun = $_GET['tahun'] ?? date('Y');
 
-        if ($jenis !== 'kas') {
+        if ($jenis === 'kas') {
+            $transactions = $this->getTransactionsByMonth($bulan, $tahun);
+            $summary = $this->getSummaryByMonth($bulan, $tahun);
+
+            view('report/view', [
+                'transactions' => $transactions,
+                'summary' => $summary,
+                'bulan' => $bulan,
+                'tahun' => $tahun,
+                'pageTitle' => 'Laporan Kas ' . $this->getMonthName($bulan) . ' ' . $tahun,
+                'breadcrumbs' => [
+                    ['label' => 'Laporan', 'url' => '/reports'],
+                    ['label' => 'Detail Laporan', 'url' => '']
+                ],
+            ]);
+        } elseif ($jenis === 'iuran') {
+            $jenisIuranId = $_GET['jenis_iuran'] ?? null;
+            if (!$jenisIuranId) {
+                $_SESSION['flash'] = ['danger', 'Jenis iuran harus dipilih.'];
+                redirect('/reports');
+            }
+
+            $details = $this->paymentFeeModel->getFeeDetails($jenisIuranId, $bulan, $tahun);
+            $summary = $this->paymentFeeModel->getSummary($jenisIuranId, $bulan, $tahun);
+            $feeType = $this->typeFeeModel->find($jenisIuranId);
+
+            view('report/view_fee', [
+                'details' => $details,
+                'summary' => $summary,
+                'feeType' => $feeType,
+                'bulan' => $bulan,
+                'tahun' => $tahun,
+                'pageTitle' => 'Laporan Iuran ' . $feeType['name'] . ' ' . $this->getMonthName($bulan) . ' ' . $tahun,
+                'breadcrumbs' => [
+                    ['label' => 'Laporan', 'url' => '/reports'],
+                    ['label' => 'Detail Laporan Iuran', 'url' => '']
+                ],
+            ]);
+        } else {
             $_SESSION['flash'] = ['danger', 'Jenis laporan tidak valid.'];
             redirect('/reports');
         }
-
-        $transactions = $this->getTransactionsByMonth($bulan, $tahun);
-        $summary = $this->getSummaryByMonth($bulan, $tahun);
-
-        view('report/view', [
-            'transactions' => $transactions,
-            'summary' => $summary,
-            'bulan' => $bulan,
-            'tahun' => $tahun,
-            'pageTitle' => 'Laporan' . $this->getMonthName($bulan) . ' ' . $tahun,
-            'breadcrumbs' => [
-                ['label' => 'Laporan', 'url' => '/reports'],
-                ['label' => 'Detail Laporan', 'url' => '']
-            ],
-        ]);
     }
 
     /** GET /reports/export */
     public function export()
     {
         try {
-            // Ambil parameter dari URL
             $jenis = $_GET['jenis'] ?? '';
             $bulan = $_GET['bulan'] ?? date('m');
             $tahun = $_GET['tahun'] ?? date('Y');
 
-            // Debug: Log parameter yang diterima
-            error_log("Export Params - Jenis: $jenis, Bulan: $bulan, Tahun: $tahun");
-
-            if ($jenis !== 'kas') {
-                throw new Exception('Jenis laporan tidak valid. Hanya laporan kas yang tersedia.');
-            }
-
-            // Validasi input
             if (!is_numeric($bulan) || $bulan < 1 || $bulan > 12) {
                 throw new Exception('Bulan harus antara 1-12');
             }
@@ -81,26 +101,36 @@ class ReportController
                 throw new Exception('Tahun harus antara 2020-' . date('Y'));
             }
 
-            // Dapatkan data
-            $transactions = $this->getTransactionsByMonth($bulan, $tahun);
-            $summary = $this->getSummaryByMonth($bulan, $tahun);
+            if ($jenis === 'kas') {
+                $transactions = $this->getTransactionsByMonth($bulan, $tahun);
+                $summary = $this->getSummaryByMonth($bulan, $tahun);
 
-            // Debug: Log jumlah data yang ditemukan
-            error_log("Jumlah transaksi ditemukan: " . count($transactions));
+                if (empty($transactions)) {
+                    throw new Exception('Tidak ada data kas untuk periode ini');
+                }
 
-            if (empty($transactions)) {
-                throw new Exception('Tidak ada data '.$jenis.' untuk periode ini');
+                $filename = 'Laporan_Kas_' . $this->getMonthName($bulan) . '_' . $tahun;
+                $this->exportCashToExcel($transactions, $summary, $filename, $bulan, $tahun);
+            } elseif ($jenis === 'iuran') {
+                $jenisIuranId = $_GET['jenis_iuran'] ?? null;
+                if (!$jenisIuranId) {
+                    throw new Exception('Jenis iuran harus dipilih');
+                }
+
+                $details = $this->paymentFeeModel->getFeeDetails($jenisIuranId, $bulan, $tahun);
+                $summary = $this->paymentFeeModel->getSummary($jenisIuranId, $bulan, $tahun);
+                $feeType = $this->typeFeeModel->find($jenisIuranId);
+
+                if (empty($details['members'])) {
+                    throw new Exception('Tidak ada data iuran untuk periode ini');
+                }
+
+                $filename = 'Laporan_Iuran_' . $feeType['name'] . '_' . $this->getMonthName($bulan) . '_' . $tahun;
+                $this->exportFeeToExcel($details, $summary, $filename, $bulan, $tahun, $feeType);
+            } else {
+                throw new Exception('Jenis laporan tidak valid');
             }
-
-            $filename = 'Laporan_'.$jenis.'_' . $this->getMonthName($bulan) . '_' . $tahun;
-
-            // Generate Excel
-            $this->exportToExcel($transactions, $summary, $filename, $bulan, $tahun);
         } catch (Exception $e) {
-            // Log error lengkap
-            error_log("Error in ReportController::export(): " . $e->getMessage());
-            error_log("Stack Trace: " . $e->getTraceAsString());
-
             $_SESSION['flash'] = ['danger', 'Gagal mengekspor laporan: ' . $e->getMessage()];
             redirect('/reports');
         }
@@ -158,7 +188,7 @@ class ReportController
         return $months[$monthNumber - 1] ?? '';
     }
 
-    private function exportToExcel($transactions, $summary, $filename, $bulan, $tahun)
+    private function exportCashToExcel($transactions, $summary, $filename, $bulan, $tahun)
     {
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
@@ -236,12 +266,126 @@ class ReportController
         $lastRow = count($transactions) + 8;
         $sheet->getStyle("A8:E{$lastRow}")->applyFromArray($tableStyle);
 
-        // Set nama file
-        $filename = $filename . '.xlsx';
+        // Output file
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header("Content-Disposition: attachment;filename=\"{$filename}.xlsx\"");
+        header('Cache-Control: max-age=0');
+
+        $writer = new Xlsx($spreadsheet);
+        $writer->save('php://output');
+        exit;
+    }
+
+    private function exportFeeToExcel($details, $summary, $filename, $bulan, $tahun, $feeType)
+    {
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+
+        // Judul Laporan
+        $sheet->setCellValue('A1', 'LAPORAN IURAN ' . strtoupper($feeType['name']));
+        $sheet->mergeCells('A1:F1');
+        $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(14);
+        $sheet->getStyle('A1')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+
+        // Periode
+        $sheet->setCellValue('A2', 'Periode: ' . $this->getMonthName($bulan) . ' ' . $tahun);
+        $sheet->mergeCells('A2:F2');
+        $sheet->getStyle('A2')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+
+        // Ringkasan
+        $sheet->setCellValue('A4', 'TARGET PER ANGGOTA');
+        $sheet->setCellValue('B4', format_rupiah($summary['target_nominal']));
+        $sheet->setCellValue('A5', 'TOTAL ANGGOTA');
+        $sheet->setCellValue('B5', $summary['total_members']);
+        $sheet->setCellValue('A6', 'TOTAL TARGET');
+        $sheet->setCellValue('B6', format_rupiah($summary['total_target']));
+        $sheet->setCellValue('A7', 'TOTAL TERBAYAR');
+        $sheet->setCellValue('B7', format_rupiah($summary['total_paid']));
+        $sheet->setCellValue('A8', 'BELUM BAYAR');
+        $sheet->setCellValue('B8', $summary['total_unpaid']);
+        $sheet->setCellValue('A9', 'TANGGUNGAN');
+        $sheet->setCellValue('B9', $summary['total_debt']);
+
+        // Style untuk ringkasan
+        $sheet->getStyle('A4:A9')->getFont()->setBold(true);
+        $sheet->getStyle('B4:B9')->getNumberFormat()->setFormatCode('#,##0');
+
+        // Header Tabel
+        $sheet->setCellValue('A11', 'NO');
+        $sheet->setCellValue('B11', 'NAMA ANGGOTA');
+        $sheet->setCellValue('C11', 'NOMOR HP');
+        $sheet->setCellValue('D11', 'STATUS');
+        $sheet->setCellValue('E11', 'NOMINAL');
+        $sheet->setCellValue('F11', 'KETERANGAN');
+
+        // Style header
+        $headerStyle = [
+            'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
+            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => '4F81BD']],
+            'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER],
+            'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN]]
+        ];
+        $sheet->getStyle('A11:F11')->applyFromArray($headerStyle);
+
+        // Isi data
+        $row = 12;
+        $no = 1;
+        foreach ($details['members'] as $member) {
+            $status = '';
+            $statusColor = '000000';
+
+            // Konversi status ke Bahasa Indonesia
+            switch ($member['payment_status']) {
+                case 'paid':
+                    $status = 'LUNAS';
+                    $statusColor = '00B050'; // Hijau
+                    break;
+                case 'unpaid':
+                    $status = 'BELUM BAYAR';
+                    $statusColor = 'FF0000'; // Merah
+                    break;
+                case 'debt':
+                    $status = 'TANGGUNGAN';
+                    $statusColor = 'FFC000'; // Kuning/Oranye
+                    break;
+                default:
+                    $status = strtoupper($member['payment_status']);
+            }
+
+            $sheet->setCellValue("A{$row}", $no++);
+            $sheet->setCellValue("B{$row}", $member['member_name']);
+            $sheet->setCellValue("C{$row}", $member['member_phone']);
+            $sheet->setCellValue("D{$row}", $status);
+            $sheet->setCellValue("E{$row}", $member['payment_nominal']);
+            $sheet->setCellValue("F{$row}", $member['payment_notes'] ?? '-');
+
+            // Warna status
+            $sheet->getStyle("D{$row}")->getFont()->getColor()->setRGB($statusColor);
+
+            // Format nominal
+            $sheet->getStyle("E{$row}")->getNumberFormat()->setFormatCode('#,##0');
+
+            $row++;
+        }
+
+        // Auto size kolom
+        foreach (range('A', 'F') as $col) {
+            $sheet->getColumnDimension($col)->setAutoSize(true);
+        }
+
+        // Border tabel
+        $tableStyle = [
+            'borders' => [
+                'outline' => ['borderStyle' => Border::BORDER_MEDIUM],
+                'inside' => ['borderStyle' => Border::BORDER_THIN]
+            ]
+        ];
+        $lastRow = count($details['members']) + 11;
+        $sheet->getStyle("A11:F{$lastRow}")->applyFromArray($tableStyle);
 
         // Output file
         header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        header("Content-Disposition: attachment;filename=\"{$filename}\"");
+        header("Content-Disposition: attachment;filename=\"{$filename}.xlsx\"");
         header('Cache-Control: max-age=0');
 
         $writer = new Xlsx($spreadsheet);

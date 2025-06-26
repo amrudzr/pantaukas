@@ -16,13 +16,27 @@
                     </select>
                 </div>
 
+                <!-- Jenis Iuran (akan muncul hanya jika jenis laporan = iuran) -->
+                <div class="col-md-4" id="jenisIuranContainer" style="display:none;">
+                    <label for="jenis_iuran" class="form-label text-muted small">Jenis Iuran</label>
+                    <select id="jenis_iuran" name="jenis_iuran" class="form-select shadow-sm">
+                        <option value="" disabled selected>Pilih jenis iuran</option>
+                        <?php
+                        $typeFeeModel = new TypeFeeModel();
+                        $feeTypes = $typeFeeModel->getAllActive();
+                        foreach ($feeTypes as $fee): ?>
+                            <option value="<?= $fee['id'] ?>"><?= $fee['name'] ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+
                 <!-- Periode Bulan -->
                 <div class="col-md-4">
                     <label for="bulan" class="form-label text-muted small">Periode Bulan</label>
                     <select id="bulan" name="bulan" class="form-select shadow-sm" required>
                         <?php
                         $bulanList = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
-                        $currentMonth = date('n'); // Mengambil bulan saat ini (1-12)
+                        $currentMonth = date('n');
                         foreach ($bulanList as $i => $nama): ?>
                             <option value="<?= $i + 1 ?>" <?= ($i + 1 == $currentMonth) ? 'selected' : '' ?>>
                                 <?= $nama ?>
@@ -36,7 +50,7 @@
                     <label for="tahun" class="form-label text-muted small">Tahun</label>
                     <select id="tahun" name="tahun" class="form-select shadow-sm" required>
                         <?php
-                        $currentYear = date('Y'); // Mengambil tahun saat ini
+                        $currentYear = date('Y');
                         for ($y = date('Y'); $y >= 2020; $y--): ?>
                             <option value="<?= $y ?>" <?= ($y == $currentYear) ? 'selected' : '' ?>>
                                 <?= $y ?>
@@ -82,13 +96,30 @@
 </div>
 
 <script>
+    // Tampilkan field jenis iuran jika jenis laporan = iuran
+    document.getElementById('jenis').addEventListener('change', function() {
+        const jenisIuranContainer = document.getElementById('jenisIuranContainer');
+        jenisIuranContainer.style.display = this.value === 'iuran' ? 'block' : 'none';
+        if (this.value === 'iuran') {
+            document.getElementById('jenis_iuran').setAttribute('required', 'required');
+        } else {
+            document.getElementById('jenis_iuran').removeAttribute('required');
+        }
+    });
+
     document.querySelector('[data-bs-target="#shareModal"]').addEventListener('click', function() {
         const jenis = document.getElementById('jenis').value;
         const bulan = document.getElementById('bulan').value;
         const tahun = document.getElementById('tahun').value;
+        let link = '';
 
-        const baseUrl = window.location.origin + '/laporan/view';
-        const link = `${baseUrl}?jenis=${jenis}&bulan=${bulan}&tahun=${tahun}`;
+        if (jenis === 'iuran') {
+            const jenisIuran = document.getElementById('jenis_iuran').value;
+            link = `${window.location.origin}/laporan/view?jenis=${jenis}&jenis_iuran=${jenisIuran}&bulan=${bulan}&tahun=${tahun}`;
+        } else {
+            link = `${window.location.origin}/laporan/view?jenis=${jenis}&bulan=${bulan}&tahun=${tahun}`;
+        }
+
         document.getElementById('shareUrl').value = link;
     });
 
