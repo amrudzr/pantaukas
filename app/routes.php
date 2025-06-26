@@ -163,10 +163,18 @@ $routes = [
         'http_method' => 'POST'
     ],
 
-    // --- BARU: Rute untuk Type Fee ---
+    // --- Rute untuk Pembayaran Iuran (Payment Fee) ---
     '^fee/types/(\d+)/details$' => [ // Untuk /fee/types/ID/details (daftar iuran anggota)
         'handler' => 'PaymentFeeController@details',
         'http_method' => 'ANY'
+    ],
+    '^fee/types/(\d+)/details/update$' => [ // Update pembayaran per anggota
+        'handler' => 'PaymentFeeController@updatePayment',
+        'http_method' => 'POST'
+    ],
+    '^fee/types/(\d+)/details/bulk-update$' => [ // Bulk update status pembayaran
+        'handler' => 'PaymentFeeController@bulkUpdatePayments',
+        'http_method' => 'POST'
     ],
 
     // --- BARU: Rute untuk Cash ---
