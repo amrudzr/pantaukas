@@ -1,16 +1,22 @@
 <?php
 require_once APP_PATH . 'models/PaymentCashModel.php';
 require_once APP_PATH . 'models/MemberModel.php';
+require_once APP_PATH . 'models/TypeFeeModel.php';
+require_once APP_PATH . 'models/PaymentFeeModel.php';
 
 class DashboardController
 {
     private $paymentModel;
     private $memberModel;
+    private $typeFeeModel;
+    private $paymentFeeModel;
 
     public function __construct()
     {
         $this->paymentModel = new PaymentCashModel();
         $this->memberModel = new MemberModel();
+        $this->typeFeeModel = new TypeFeeModel();
+        $this->paymentFeeModel = new PaymentFeeModel();
     }
 
     /** GET /dashboard */
@@ -25,10 +31,10 @@ class DashboardController
         $totalPengeluaran = $this->paymentModel->sumByTypeAndDate('out', $selectedMonth, $selectedYear);
         $saldoKas = $totalPemasukan - $totalPengeluaran;
 
-        // Hitung total iuran (asumsi iuran adalah transaksi dengan kategori tertentu)
-        $totalIuran = $this->paymentModel->sumByCategoryAndDate('iuran', $selectedMonth, $selectedYear);
+        // Hitung total iuran dari payment_fee
+        $totalIuran = $this->paymentFeeModel->getTotalPaidFees($selectedMonth, $selectedYear);
 
-        // Hitung persentase perubahan kas dan iuran (dibandingkan dengan bulan sebelumnya)
+        // Hitung persentase perubahan kas dan iuran
         $kasChangePct = $this->calculatePercentageChange('kas', $selectedMonth, $selectedYear);
         $iuranChangePct = $this->calculatePercentageChange('iuran', $selectedMonth, $selectedYear);
 
@@ -41,8 +47,8 @@ class DashboardController
         // Riwayat transaksi terakhir
         $riwayatTransaksi = $this->paymentModel->getRecentTransactions(5);
 
-        // Anggota dengan tunggakan (contoh implementasi sederhana)
-        $anggotaTunggakan = $this->getAnggotaTunggakan();
+        // Dapatkan data tunggakan per jenis iuran
+        $tunggakanPerJenis = $this->getTunggakanPerJenis($selectedMonth, $selectedYear);
 
         // Siapkan data untuk view
         $data = [
@@ -57,7 +63,7 @@ class DashboardController
             'anggotaPassive' => count($anggotaPassive),
             'anggotaKeluar' => count($anggotaKeluar),
             'riwayatTransaksi' => $riwayatTransaksi,
-            'anggotaTunggakan' => $anggotaTunggakan,
+            'tunggakanPerJenis' => $tunggakanPerJenis,
             'pageTitle' => 'Dashboard',
             'breadcrumbs' => [
                 ['label' => 'Dashboard', 'url' => '/dashboard']
@@ -67,9 +73,6 @@ class DashboardController
         view('dashboard', $data);
     }
 
-    /**
-     * Hitung persentase perubahan dari bulan sebelumnya
-     */
     private function calculatePercentageChange(string $type, string $month, string $year): float
     {
         $prevMonth = $month - 1;
@@ -92,8 +95,8 @@ class DashboardController
             $prevPengeluaran = $this->paymentModel->sumByTypeAndDate('out', $prevMonth, $prevYear);
             $previousValue = $prevPemasukan - $prevPengeluaran;
         } elseif ($type === 'iuran') {
-            $currentValue = $this->paymentModel->sumByCategoryAndDate('iuran', $month, $year);
-            $previousValue = $this->paymentModel->sumByCategoryAndDate('iuran', $prevMonth, $prevYear);
+            $currentValue = $this->paymentFeeModel->getTotalPaidFees($month, $year);
+            $previousValue = $this->paymentFeeModel->getTotalPaidFees($prevMonth, $prevYear);
         }
 
         if ($previousValue == 0) {
@@ -104,16 +107,28 @@ class DashboardController
     }
 
     /**
-     * Dapatkan daftar anggota dengan tunggakan
-     * (Ini adalah contoh sederhana, implementasi sebenarnya mungkin lebih kompleks)
+     * Dapatkan data tunggakan per jenis iuran
      */
-    private function getAnggotaTunggakan(): array
+    private function getTunggakanPerJenis($month, $year): array
     {
-        // Asumsi ada model Iuran yang menangani data iuran anggota
-        // Ini hanya contoh sederhana
-        return [
-            ['nama' => 'Ahmad', 'status' => 'Hutang', 'jumlah' => 50000],
-            ['nama' => 'Budi', 'status' => 'Belum Bayar', 'jumlah' => 50000]
-        ];
+        $userId = $_SESSION['user_id'];
+        $jenisIuran = $this->typeFeeModel->all();
+        $result = [];
+
+        foreach ($jenisIuran as $jenis) {
+            // Hitung jumlah anggota yang belum bayar untuk jenis iuran ini
+            $unpaidCount = $this->paymentFeeModel->countUnpaidMembers($jenis['id'], $month, $year);
+
+            if ($unpaidCount > 0) {
+                $result[] = [
+                    'jenis_iuran' => $jenis['name'],
+                    'jumlah_tunggakan' => $unpaidCount,
+                    'target_nominal' => $jenis['nominal'],
+                    'total_potensi' => $unpaidCount * $jenis['nominal']
+                ];
+            }
+        }
+
+        return $result;
     }
 }

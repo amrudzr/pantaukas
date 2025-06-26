@@ -251,4 +251,49 @@ class PaymentFeeModel
             'total_debt' => $result['total_debt'] ?? 0
         ];
     }
+
+    public function getTotalPaidFees($month, $year)
+    {
+        $userId = $_SESSION['user_id'];
+
+        $stmt = $this->db->prepare("
+        SELECT SUM(pf.nominal) as total_paid
+        FROM payment_fee pf
+        JOIN type_fee tf ON pf.id_type_fee = tf.id
+        WHERE tf.id_user = ?
+        AND MONTH(pf.payment_date) = ?
+        AND YEAR(pf.payment_date) = ?
+        AND pf.status = 'paid'
+        AND pf.deleted_at IS NULL
+    ");
+        $stmt->bind_param("iii", $userId, $month, $year);
+        $stmt->execute();
+        $result = $stmt->get_result()->fetch_assoc();
+        return $result['total_paid'] ?? 0;
+    }
+
+    public function countUnpaidMembers($feeTypeId, $month, $year)
+    {
+        $userId = $_SESSION['user_id'];
+
+        // Hitung total anggota aktif
+        $totalMembers = $this->db->query("
+        SELECT COUNT(*) as total 
+        FROM member 
+        WHERE id_user = $userId AND deleted_at IS NULL AND status = 'active'
+    ")->fetch_assoc()['total'];
+
+        // Hitung yang sudah bayar
+        $paidMembers = $this->db->query("
+        SELECT COUNT(DISTINCT id_member) as paid 
+        FROM payment_fee 
+        WHERE id_type_fee = $feeTypeId 
+        AND MONTH(payment_date) = $month 
+        AND YEAR(payment_date) = $year 
+        AND status = 'paid'
+        AND deleted_at IS NULL
+    ")->fetch_assoc()['paid'];
+
+        return $totalMembers - $paidMembers;
+    }
 }

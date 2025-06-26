@@ -169,7 +169,7 @@ $anggotaTunggakan = $anggotaTunggakan ?? [
                                         <td class="text-end <?= $trx['type'] === 'out' ? 'text-danger' : 'text-success' ?>">
                                             <?= ($trx['type'] === 'out' ? '-' : '') . format_rupiah($trx['nominal'], 0, ',', '.') ?>
                                         </td>
-                                        <td class="text-end fs-6 fst-italic fw-light"><?= time_ago($trx['payment_date']) ?></td>
+                                        <td class="text-end"><span class="small text-muted"><?= time_ago($trx['payment_date']) ?></span></td>
                                     </tr>
                                 <?php endforeach; ?>
                             <?php else: ?>
@@ -184,12 +184,12 @@ $anggotaTunggakan = $anggotaTunggakan ?? [
         </div>
     </div>
 
-    <!-- Anggota Tunggakan -->
+    <!-- Tunggakan Per Jenis Iuran -->
     <div class="col-lg-4">
         <div class="card shadow-sm h-100">
             <div class="card-header bg-white fw-semibold d-flex justify-content-between align-items-center">
-                Status Iuran Anggota
-                <a href="/iuran/tunggakan" class="btn btn-sm btn-link text-decoration-none">
+                Tunggakan Iuran
+                <a href="/fee/types" class="btn btn-sm btn-link text-decoration-none">
                     Selengkapnya <i class="bi bi-arrow-right-short"></i>
                 </a>
             </div>
@@ -198,32 +198,27 @@ $anggotaTunggakan = $anggotaTunggakan ?? [
                     <table class="table table-borderless table-hover align-middle mb-0">
                         <thead class="table-light">
                             <tr>
-                                <th>#</th>
-                                <th>Nama</th>
-                                <th>Status</th>
-                                <th class="text-end">Jumlah (Rp)</th>
+                                <th>Jenis Iuran</th>
+                                <th class="text-end">Jumlah</th>
+                                <th class="text-end">Potensi</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <?php if (!empty($anggotaTunggakan)): ?>
-                                <?php foreach ($anggotaTunggakan as $i => $agt): ?>
+                            <?php if (!empty($tunggakanPerJenis)): ?>
+                                <?php foreach ($tunggakanPerJenis as $tunggakan): ?>
                                     <tr>
-                                        <td><?= $i + 1 ?></td>
-                                        <td><?= htmlspecialchars($agt['nama']) ?></td>
-                                        <td>
-                                            <?php
-                                            $badge = $agt['status'] === 'Hutang' ? 'danger' : 'warning';
-                                            echo "<span class='badge bg-$badge'>{$agt['status']}</span>";
-                                            ?>
+                                        <td><?= htmlspecialchars($tunggakan['jenis_iuran']) ?></td>
+                                        <td class="text-end">
+                                            <span class="badge bg-danger"><?= $tunggakan['jumlah_tunggakan'] ?> orang</span>
                                         </td>
                                         <td class="text-end">
-                                            <?= isset($agt['jumlah']) ? number_format($agt['jumlah'], 0, ',', '.') : '-' ?>
+                                            <?= format_rupiah($tunggakan['total_potensi'], 0, ',', '.') ?>
                                         </td>
                                     </tr>
                                 <?php endforeach; ?>
                             <?php else: ?>
                                 <tr>
-                                    <td colspan="4" class="text-center text-muted py-4">Semua anggota lunas.</td>
+                                    <td colspan="3" class="text-center text-muted py-4">Semua iuran sudah lunas.</td>
                                 </tr>
                             <?php endif; ?>
                         </tbody>
