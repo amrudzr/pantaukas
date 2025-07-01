@@ -9,12 +9,12 @@
 require_once APP_PATH . 'views/layout/header.php';
 
 // Navbar hanya untuk non-login user
-if (!isset($_SESSION['user_id'])) {
+if (!isset($_SESSION['user_id']) && !isset($_SESSION['admin_id'])) {
     require_once APP_PATH . 'views/layout/navbar.php';
 }
 ?>
 
-<?php if (isset($_SESSION['user_id'])): ?>
+<?php if (isset($_SESSION['user_id']) || isset($_SESSION['admin_id'])): ?>
     <!-- NAVBAR MINI (hanya tampil di mobile) -->
     <nav class="navbar navbar-light bg-white border-bottom sticky-top d-lg-none">
         <div class="container-fluid">
@@ -23,7 +23,9 @@ if (!isset($_SESSION['user_id'])) {
                     data-bs-toggle="offcanvas" data-bs-target="#mobileSidebar" aria-controls="mobileSidebar">
                     <i class="bi bi-list"></i>
                 </button>
-                <span class="fw-semibold fs-5 text-dark">Pantaukas</span>
+                <span class="fw-semibold fs-5 text-dark">
+                    <?= isset($_SESSION['admin_id']) ? 'Admin Panel' : 'Pantaukas' ?>
+                </span>
             </div>
         </div>
     </nav>
@@ -31,7 +33,7 @@ if (!isset($_SESSION['user_id'])) {
 
 <div class="container-fluid">
     <div class="row">
-        <?php if (isset($_SESSION['user_id'])): ?>
+        <?php if (isset($_SESSION['user_id']) || isset($_SESSION['admin_id'])): ?>
             <!-- SIDEBAR DESKTOP -->
             <aside class="col-auto px-0">
                 <?php require_once APP_PATH . 'views/layout/sidebar.php'; ?>
@@ -66,7 +68,7 @@ if (!isset($_SESSION['user_id'])) {
                 <?php endif; ?>
                 
                 <?php
-                if (isset($_SESSION['user_id'])) {
+                if (isset($_SESSION['user_id']) || isset($_SESSION['admin_id'])) {
                     require_once APP_PATH . 'views/layout/breadcrumb.php';
                 }
                 ?>
@@ -86,7 +88,7 @@ if (!isset($_SESSION['user_id'])) {
 
 <?php
 //FOOTER hanya jika TIDAK login
-if (!isset($_SESSION['user_id'])) {
+if (!isset($_SESSION['user_id']) && !isset($_SESSION['admin_id'])) {
     require_once APP_PATH . 'views/layout/footer.php';
 }
 ?>

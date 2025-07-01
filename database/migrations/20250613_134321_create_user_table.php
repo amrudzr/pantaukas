@@ -14,6 +14,7 @@ function migrate_create_user_table(mysqli $conn)
 {
     $sql = "CREATE TABLE IF NOT EXISTS user (
                 id INT AUTO_INCREMENT PRIMARY KEY,
+                id_admin INT NULL,
                 name VARCHAR(255) NOT NULL,
                 phone VARCHAR(50) NOT NULL UNIQUE,
                 password VARCHAR(255) NOT NULL, -- Akan menyimpan password yang di-hash
@@ -21,7 +22,8 @@ function migrate_create_user_table(mysqli $conn)
                 last_login TIMESTAMP NULL, -- Waktu login terakhir
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, -- Auto-update
-                deleted_at TIMESTAMP NULL -- Sebaiknya NULL default untuk soft delete
+                deleted_at TIMESTAMP NULL, -- Sebaiknya NULL default untuk soft delete
+                FOREIGN KEY (id_admin) REFERENCES admin(id) ON DELETE RESTRICT
                 -- Index sudah ada di definisi kolom, tidak perlu ditulis ulang di sini
                 -- INDEX (status) -- Index untuk mempercepat query berdasarkan status
                 -- INDEX (phone) -- Index sudah ada karena UNIQUE, tapi ditulis eksplisit

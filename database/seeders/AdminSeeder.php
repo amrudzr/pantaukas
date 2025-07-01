@@ -13,9 +13,11 @@ function seed_admin_table(mysqli $conn)
 {
     // Password dummy akan di-hash sebelum disimpan
     $superadminPassword = password_hash('superadmin123', PASSWORD_DEFAULT); // Password untuk superadmin
+    $adminPassword = password_hash('admin123', PASSWORD_DEFAULT); // Password untuk admin
 
     $admin_data = [
-        ['Super Admin', 'superadmin@example.com', $superadminPassword, 'superadmin', 'active']
+        ['Super Admin', 'superadmin@example.com', $superadminPassword, 'superadmin', 'active'],
+        ['Admin', 'admin@example.com', $adminPassword, 'admin', 'active'],
     ];
 
     $stmt = $conn->prepare("INSERT INTO admin (name, email, password, role, status) VALUES (?, ?, ?, ?, ?)");

@@ -17,6 +17,11 @@ require_once APP_PATH . 'controllers/TypeCashController.php';
 require_once APP_PATH . 'controllers/PaymentCashController.php';
 require_once APP_PATH . 'controllers/ExampleController.php'; // Controller untuk halaman contoh (Example)
 
+// Admin
+require_once APP_PATH . 'controllers/Admin/AdminAuthController.php';
+require_once APP_PATH . 'controllers/Admin/AdminDashboardController.php';
+require_once APP_PATH . 'controllers/Admin/AdminUserController.php';
+
 /**
  * Peta rute yang mendefinisikan semua URL dan handler-nya.
  * Format: 'URL_REGEX_PATTERN' => ['method' => 'Controller@method', 'http_method' => 'GET/POST/ANY']
@@ -30,9 +35,15 @@ $routes = [
         'handler' => function () {
             if ($_SERVER['HTTP_HOST'] !== 'localhost:8000' && $_SERVER['HTTP_HOST'] !== 'localhost') {
                 header("HTTP/1.0 403 Forbidden");
-                echo "<h1>403 Forbidden</h1>";
-                echo "<p>Akses ke fitur setup database dilarang di lingkungan ini.</p>";
-                exit();
+                $pageTitle   = '403 – Akses Ditolak';
+                $breadcrumbs = [
+                    ['label' => 'Home', 'url' => '/dashboard'], // Ganti ke dashboard kalau sudah login
+                    ['label' => '404',  'url' => '']
+                ];
+                $contentView = 'errors/403.php';
+
+                require_once APP_PATH . 'views/layout/app.php';
+                exit;
             }
             echo "<pre>";
             require_once __DIR__ . '/../database/setup.php';
@@ -240,6 +251,63 @@ $routes = [
     //     'handler' => 'BookController@index', // Arahkan ke daftar buku
     //     'http_method' => 'GET'
     // ]
+
+    // --- Rute untuk Admin Auth ---
+    '^admin/login$' => [
+        'handler' => 'AdminAuthController@login',
+        'http_method' => 'ANY',
+        'requires_auth' => false
+    ],
+    '^admin/logout$' => [
+        'handler' => 'AdminAuthController@logout',
+        'http_method' => 'GET',
+        'requires_auth' => true,
+        'required_role' => ['superadmin', 'admin', 'operator'] // Tambahkan ini jika ada middleware role
+    ],
+    '^admin/dashboard$' => [
+        'handler' => 'AdminDashboardController@index',
+        'http_method' => 'GET',
+        'requires_auth' => true,
+        'required_role' => ['superadmin', 'admin', 'operator'] // Tambahkan ini jika ada middleware role
+    ],
+    
+    // --- Rute untuk Admin Mengelola Pengguna ---
+    '^admin/users$' => [
+        'handler' => 'AdminUserController@index',
+        'http_method' => 'GET',
+        'requires_auth' => true,
+        'required_role' => ['superadmin', 'admin', 'operator'] // Tambahkan ini jika ada middleware role
+    ],
+    '^admin/users/create$' => [
+        'handler' => 'AdminUserController@create',
+        'http_method' => 'ANY',
+        'requires_auth' => true,
+        'required_role' => ['superadmin', 'admin'] // Tambahkan ini jika ada middleware role
+    ],
+    '^admin/users/(\d+)/edit$' => [
+        'handler' => 'AdminUserController@edit',
+        'http_method' => 'ANY',
+        'requires_auth' => true,
+        'required_role' => ['superadmin', 'admin'] // Tambahkan ini jika ada middleware role
+    ],
+    '^admin/users/(\d+)/delete$' => [
+        'handler' => 'AdminUserController@delete',
+        'http_method' => 'POST',
+        'requires_auth' => true,
+        'required_role' => ['superadmin', 'admin'] // Tambahkan ini jika ada middleware role
+    ],
+    '^admin/users/(\d+)/block$' => [
+        'handler' => 'AdminUserController@block',
+        'http_method' => 'POST',
+        'requires_auth' => true,
+        'required_role' => ['superadmin', 'admin'] // Tambahkan ini jika ada middleware role
+    ],
+    '^admin/users/(\d+)/activate$' => [
+        'handler' => 'AdminUserController@activate',
+        'http_method' => 'POST',
+        'requires_auth' => true,
+        'required_role' => ['superadmin', 'admin'] // Tambahkan ini jika ada middleware role
+    ],
 ];
 
 /**
@@ -256,9 +324,8 @@ function dispatchRequest($uri)
 
             /* ========  C E K  W A J I B  L O G I N  ======== */
             $needsLogin = $route['requires_auth'] ?? false;
-            if ($needsLogin && !isset($_SESSION['user_id'])) {
-                // Belum login → arahkan ke halaman login (atau 403)
-                header('Location: /login');
+            if ($needsLogin && !isset($_SESSION['user_id']) && !isset($_SESSION['admin_id'])) {
+                header('Location: ' . (strpos($uri, '/admin') === 0 ? '/admin/login' : '/login'));
                 exit;
             }
             /* ================================================= */
@@ -267,6 +334,15 @@ function dispatchRequest($uri)
             if ($route['http_method'] === 'ANY' || $route['http_method'] === $requestMethod) {
 
                 $handler = $route['handler'];
+
+                /* ======== C E K R O L E (UNTUK ADMIN) ======== */
+                if (isset($route['required_role'])) {
+                    $currentRole = $_SESSION['admin_role'] ?? null;
+                    if (!$currentRole || !in_array($currentRole, $route['required_role'])) {
+                        showErrorPage(403);
+                        exit;
+                    }
+                }
 
                 /* 1) Jika handler berupa closure (callable) */
                 if (is_callable($handler)) {
@@ -306,11 +382,26 @@ function dispatchRequest($uri)
 
     $pageTitle   = '404 – Halaman Tidak Ditemukan';
     $breadcrumbs = [
-        ['label' => 'Home', 'url' => '/dashboard'], // Ganti ke dashboard kalau sudah login
+        ['label' => 'Home', 'url' => isset($_SESSION['admin_id']) ? '/admin/dashboard' : '/dashboard'],
         ['label' => '404',  'url' => '']
     ];
     $contentView = 'errors/404.php';
 
     require_once APP_PATH . 'views/layout/app.php';
     exit;
+
+    function showErrorPage($code)
+    {
+        http_response_code($code);
+
+        $pageTitle = "$code – " . ($code === 403 ? 'Akses Ditolak' : 'Halaman Tidak Ditemukan');
+        $breadcrumbs = [
+            ['label' => 'Home', 'url' => isset($_SESSION['admin_id']) ? '/admin/dashboard' : '/dashboard'],
+            ['label' => $code, 'url' => '']
+        ];
+        $contentView = "errors/$code.php";
+
+        require_once APP_PATH . 'views/layout/app.php';
+        exit;
+    }
 }

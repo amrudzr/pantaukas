@@ -122,4 +122,59 @@ class UserModel
         $stmt->bind_param("i", $id);
         return $stmt->execute();
     }
+
+    /**
+     * Mendapatkan total jumlah user (termasuk yang dihapus/soft deleted)
+     * @return int Jumlah total user
+     */
+    public function getCount()
+    {
+        $stmt = $this->db->prepare("SELECT COUNT(*) as count FROM user");
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $row = $result->fetch_assoc();
+        return $row['count'];
+    }
+
+    public function getCountByStatus($status)
+    {
+        $stmt = $this->db->prepare("SELECT COUNT(*) FROM user WHERE status = ?");
+        $stmt->bind_param("s", $status);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        return $result->fetch_row()[0];
+    }
+
+    public function getMonthlyCount($month, $year)
+    {
+        $stmt = $this->db->prepare("SELECT COUNT(*) FROM user 
+        WHERE MONTH(created_at) = ? AND YEAR(created_at) = ?");
+        $stmt->bind_param("ss", $month, $year);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        return $result->fetch_row()[0];
+    }
+
+    public function getYearlyCount($year)
+    {
+        $stmt = $this->db->prepare("SELECT 
+        SUM(MONTH(created_at) = 1) as jan,
+        SUM(MONTH(created_at) = 2) as feb,
+        SUM(MONTH(created_at) = 3) as mar,
+        SUM(MONTH(created_at) = 4) as apr,
+        SUM(MONTH(created_at) = 5) as may,
+        SUM(MONTH(created_at) = 6) as jun,
+        SUM(MONTH(created_at) = 7) as jul,
+        SUM(MONTH(created_at) = 8) as aug,
+        SUM(MONTH(created_at) = 9) as sep,
+        SUM(MONTH(created_at) = 10) as oct,
+        SUM(MONTH(created_at) = 11) as nov,
+        SUM(MONTH(created_at) = 12) as december
+        FROM user WHERE YEAR(created_at) = ?");
+        $stmt->bind_param("s", $year);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $data = $result->fetch_assoc();
+        return array_values($data);
+    }
 }
